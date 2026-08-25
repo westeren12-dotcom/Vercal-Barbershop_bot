@@ -255,6 +255,8 @@ export async function createBot(): Promise<Telegraf> {
   bot.on('text', async (ctx) => {
     const telegramId = ctx.from?.id;
     if (!telegramId) return;
+    const text = ctx.message && 'text' in ctx.message ? ctx.message.text : '';
+    if (!text) return;
 
     // Check if admin is in broadcast mode
     if (await isAdmin(ctx)) {
@@ -264,8 +266,34 @@ export async function createBot(): Promise<Telegraf> {
       }
     }
 
-    // Unknown command
-    // Don't reply to every text message to avoid spam
+    // ─── Keyboard Button Text Handlers ──────────────────
+    // Reply keyboard buttons send plain text, not commands
+    // We must match the exact text from Markup.keyboard()
+
+    // Customer keyboard buttons
+    if (text.includes('Online Booking') || text === '📅 Online Booking') {
+      return handleBooking(ctx);
+    }
+    if (text.includes('Xizmatlar') && !text.includes('Mening') && !text.includes('Bugungi') && !text.includes('Admin')) {
+      // Could be customer '💈 Xizmatlar' or admin '/Xizmatlar'
+      // For keyboard buttons, route to customer services
+      return handleServices(ctx);
+    }
+    if (text.includes('Narxlar') || text === '💰 Narxlar') {
+      return handlePrices(ctx);
+    }
+    if (text.includes('buyurtmalarim') || text === '📋 Mening buyurtmalarim') {
+      return handleMyAppointments(ctx);
+    }
+    if (text.includes('Xizmatim tugadi') || text === '✅ Xizmatim tugadi') {
+      return handleFinished(ctx);
+    }
+    if (text.includes('Manzil') || text === '📍 Manzil') {
+      return handleLocation(ctx);
+    }
+    if (text.includes('Aloqa') || text === '📞 Aloqa') {
+      return handleContact(ctx);
+    }
   });
 
   // ═══════════════════════════════════════════════════════
