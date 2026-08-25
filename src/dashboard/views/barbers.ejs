@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>👨‍💈 Barbers</h1>
+  <p>Barber team and performance</p>
+</div>
+
+<div class="table-container">
+  <div class="table-header">
+    <h2>All Barbers</h2>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Status</th>
+          <th>Completed Services</th>
+          <th>Total Revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% barbers.forEach(function(b, i) { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><strong><%= b.name %></strong></td>
+          <td><%= b.username ? '@' + b.username : '-' %></td>
+          <td>
+            <span class="badge <%= b.isActive ? 'badge-active' : 'badge-inactive' %>">
+              <%= b.isActive ? 'Active' : 'Inactive' %>
+            </span>
+          </td>
+          <td><span class="badge badge-completed"><%= b.completedServices %></span></td>
+          <td><strong><%= formatPrice(b.totalRevenue) %></strong></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,106 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>⚙️ Settings</h1>
+  <p>System configuration and management</p>
+</div>
+
+<div class="grid-2">
+  <div class="table-container">
+    <div class="table-header">
+      <h2>👑 Admins</h2>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% admins.forEach(function(a) { %>
+          <tr>
+            <td><strong><%= a.username ? '@' + a.username : 'N/A' %></strong></td>
+            <td><%= a.firstName || '-' %></td>
+            <td>
+              <span class="badge <%= a.isActive ? 'badge-active' : 'badge-inactive' %>">
+                <%= a.isActive ? 'Active' : 'Inactive' %>
+              </span>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div class="table-header">
+      <h2>👨‍💈 Barbers</h2>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% barbers.forEach(function(b) { %>
+          <tr>
+            <td><strong><%= b.name %></strong></td>
+            <td>
+              <span class="badge <%= b.isActive ? 'badge-active' : 'badge-inactive' %>">
+                <%= b.isActive ? 'Active' : 'Inactive' %>
+              </span>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="table-container">
+  <div class="table-header">
+    <h2>✂️ Services</h2>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Price</th>
+          <th>Duration</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% services.forEach(function(s) { %>
+        <tr>
+          <td><strong><%= s.emoji %> <%= s.name %></strong></td>
+          <td>
+            <% if (s.isPriceFixed) { %>
+              <%= formatPrice(s.price) %>
+            <% } else { %>
+              <%= formatPrice(s.priceMin || s.price) %> – <%= formatPrice(s.priceMax || s.price) %>
+            <% } %>
+          </td>
+          <td><%= s.duration %> min</td>
+          <td>
+            <span class="badge <%= s.isActive ? 'badge-active' : 'badge-inactive' %>">
+              <%= s.isActive ? 'Active' : 'Inactive' %>
+            </span>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

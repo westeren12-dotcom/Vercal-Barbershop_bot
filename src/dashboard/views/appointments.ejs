@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>📅 Appointments</h1>
+  <p>All bookings and their status</p>
+</div>
+
+<div class="table-container">
+  <div class="table-header">
+    <h2>Recent Appointments</h2>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Barber</th>
+          <th>Service</th>
+          <th>Date</th>
+          <th>Price</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% appointments.forEach(function(apt) { %>
+        <tr>
+          <td><strong><%= apt.customer.firstName || 'N/A' %></strong></td>
+          <td><%= apt.barber.name %></td>
+          <td><%= apt.service.emoji %> <%= apt.service.name %></td>
+          <td><%= formatDate(apt.date) %></td>
+          <td><strong><%= formatPrice(apt.price) %></strong></td>
+          <td>
+            <% 
+              let badgeClass = 'badge-pending';
+              if (apt.status === 'COMPLETED') badgeClass = 'badge-completed';
+              else if (apt.status === 'CONFIRMED') badgeClass = 'badge-confirmed';
+              else if (apt.status === 'CUSTOMER_FINISHED') badgeClass = 'badge-customer-finished';
+              else if (apt.status === 'REJECTED') badgeClass = 'badge-rejected';
+              else if (apt.status === 'CANCELLED') badgeClass = 'badge-cancelled';
+            %>
+            <span class="badge <%= badgeClass %>"><%= apt.status %></span>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,157 @@
+// Vercal Barbershop — Prisma Schema
+// PostgreSQL database for revenue tracking & booking
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Admin ──────────────────────────────────────────────
+
+model Admin {
+  id            Int      @id @default(autoincrement())
+  telegramId    BigInt   @unique
+  username      String?
+  firstName     String?
+  lastName      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ─── Customer ───────────────────────────────────────────
+
+model Customer {
+  id             Int             @id @default(autoincrement())
+  telegramId     BigInt          @unique
+  username       String?
+  firstName      String?
+  lastName       String?
+  phone          String?
+  totalSpent     BigInt          @default(0)
+  completedCount Int             @default(0)
+  lastVisit      DateTime?
+  isBlocked      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  appointments   Appointment[]
+  notifications  Notification[]
+}
+
+// ─── Barber ─────────────────────────────────────────────
+
+model Barber {
+  id             Int             @id @default(autoincrement())
+  name           String
+  telegramId     BigInt?         @unique
+  username       String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  appointments   Appointment[]
+  revenues       Revenue[]
+}
+
+// ─── Service ────────────────────────────────────────────
+
+model Service {
+  id             Int             @id @default(autoincrement())
+  name           String
+  emoji          String          @default("✂️")
+  price          BigInt
+  priceMin       BigInt?         // For range-priced services (e.g. Yuz chistkasi)
+  priceMax       BigInt?         // For range-priced services
+  duration       Int             // Duration in minutes
+  durationMin    Int?            // For range durations
+  durationMax    Int?            // For range durations
+  isPriceFixed   Boolean         @default(true)
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  appointments   Appointment[]
+  revenues       Revenue[]
+}
+
+// ─── Appointment ────────────────────────────────────────
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CUSTOMER_FINISHED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+model Appointment {
+  id             Int                @id @default(autoincrement())
+  customerId     Int
+  customer       Customer           @relation(fields: [customerId], references: [id])
+  barberId       Int
+  barber         Barber             @relation(fields: [barberId], references: [id])
+  serviceId      Int
+  service        Service            @relation(fields: [serviceId], references: [id])
+  date           DateTime           // Planned visit date (date only, no time)
+  price          BigInt             // Price at time of booking
+  status         AppointmentStatus  @default(PENDING)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  completionRequest ServiceCompletionRequest?
+  revenue          Revenue?
+
+  @@unique([customerId, barberId, serviceId, date], name: "unique_booking")
+}
+
+// ─── Service Completion Request ─────────────────────────
+
+enum CompletionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ServiceCompletionRequest {
+  id             Int                    @id @default(autoincrement())
+  appointmentId  Int                    @unique
+  appointment    Appointment            @relation(fields: [appointmentId], references: [id])
+  requestedAt    DateTime               @default(now())
+  reviewedAt     DateTime?
+  reviewedById   BigInt?                // Admin who reviewed
+  status         CompletionRequestStatus @default(PENDING)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+}
+
+// ─── Revenue ────────────────────────────────────────────
+
+model Revenue {
+  id             Int             @id @default(autoincrement())
+  appointmentId  Int             @unique
+  appointment    Appointment     @relation(fields: [appointmentId], references: [id])
+  serviceId      Int
+  service        Service         @relation(fields: [serviceId], references: [id])
+  barberId       Int
+  barber         Barber          @relation(fields: [barberId], references: [id])
+  amount         BigInt
+  date           DateTime        // Date for grouping (date only)
+  createdAt      DateTime        @default(now())
+}
+
+// ─── Notification ───────────────────────────────────────
+
+model Notification {
+  id             Int      @id @default(autoincrement())
+  customerId     Int?
+  customer       Customer? @relation(fields: [customerId], references: [id])
+  type           String   // e.g. "admin_verification", "completion_request", "broadcast"
+  message        String
+  isRead         Boolean  @default(false)
+  metadata       String?  // JSON string for extra data
+  createdAt      DateTime @default(now())
+}

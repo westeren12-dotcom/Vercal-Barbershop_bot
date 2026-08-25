@@ -1,0 +1,58 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>✂️ Services</h1>
+  <p>Service catalog and pricing</p>
+</div>
+
+<div class="table-container">
+  <div class="table-header">
+    <h2>All Services</h2>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Service</th>
+          <th>Price</th>
+          <th>Duration</th>
+          <th>Status</th>
+          <th>Bookings</th>
+          <th>Revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% services.forEach(function(s, i) { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><strong><%= s.emoji %> <%= s.name %></strong></td>
+          <td>
+            <% if (s.isPriceFixed) { %>
+              <strong><%= formatPrice(s.price) %></strong>
+            <% } else { %>
+              <strong><%= formatPrice(s.priceMin || s.price) %> – <%= formatPrice(s.priceMax || s.price) %></strong>
+            <% } %>
+          </td>
+          <td>
+            <% if (s.durationMax) { %>
+              <%= s.durationMin || s.duration %>–<%= s.durationMax %> min
+            <% } else { %>
+              <%= s.duration %> min
+            <% } %>
+          </td>
+          <td>
+            <span class="badge <%= s.isActive ? 'badge-active' : 'badge-inactive' %>">
+              <%= s.isActive ? 'Active' : 'Inactive' %>
+            </span>
+          </td>
+          <td><%= s._count.appointments %></td>
+          <td><strong><%= formatPrice(s.totalRevenue) %></strong></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

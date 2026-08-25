@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= clinicName %> — Admin Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">💈</span>
+      <h2>Vercal</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item<%= currentPage === 'dashboard' ? ' active' : '' %>">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a href="/appointments" class="nav-item<%= currentPage === 'appointments' ? ' active' : '' %>">
+        <span class="nav-icon">📅</span> Appointments
+      </a>
+      <a href="/customers" class="nav-item<%= currentPage === 'customers' ? ' active' : '' %>">
+        <span class="nav-icon">👥</span> Customers
+      </a>
+      <a href="/barbers" class="nav-item<%= currentPage === 'barbers' ? ' active' : '' %>">
+        <span class="nav-icon">👨‍💈</span> Barbers
+      </a>
+      <a href="/services" class="nav-item<%= currentPage === 'services' ? ' active' : '' %>">
+        <span class="nav-icon">✂️</span> Services
+      </a>
+      <a href="/revenue" class="nav-item<%= currentPage === 'revenue' ? ' active' : '' %>">
+        <span class="nav-icon">💰</span> Revenue
+      </a>
+      <a href="/statistics" class="nav-item<%= currentPage === 'statistics' ? ' active' : '' %>">
+        <span class="nav-icon">📈</span> Statistics
+      </a>
+      <a href="/settings" class="nav-item<%= currentPage === 'settings' ? ' active' : '' %>">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <span>© 2026 Vercal Barbershop</span>
+    </div>
+  </aside>
+  <main class="main-content">

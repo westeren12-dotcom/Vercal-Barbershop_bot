@@ -1,0 +1,79 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>📈 Statistics</h1>
+  <p>Performance overview and analytics</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon">💰</div>
+    <div class="stat-label">Total Revenue</div>
+    <div class="stat-value accent"><%= formatPrice(totalRevenue) %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📆</div>
+    <div class="stat-label">Monthly Revenue</div>
+    <div class="stat-value accent"><%= formatPrice(monthRevenue) %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">✅</div>
+    <div class="stat-label">Total Completed</div>
+    <div class="stat-value success"><%= totalCompleted %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🚫</div>
+    <div class="stat-label">Cancelled</div>
+    <div class="stat-value danger"><%= totalCancelled %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">❌</div>
+    <div class="stat-label">Rejected</div>
+    <div class="stat-value danger"><%= totalRejected %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">👤</div>
+    <div class="stat-label">Total Customers</div>
+    <div class="stat-value info"><%= totalCustomers %></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="chart-container">
+    <h3>⭐ Top Services</h3>
+    <div class="top-list">
+      <% topServices.forEach(function(s, i) { %>
+      <div class="top-item">
+        <div class="item-info">
+          <div class="item-rank"><%= i + 1 %></div>
+          <div>
+            <div class="item-name"><%= s.emoji %> <%= s.name %></div>
+            <div class="item-meta"><%= s.count %> bookings</div>
+          </div>
+        </div>
+        <div class="item-value"><%= formatPrice(s.revenue) %></div>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <h3>👨‍💈 Top Barbers</h3>
+    <div class="top-list">
+      <% topBarbers.forEach(function(b, i) { %>
+      <div class="top-item">
+        <div class="item-info">
+          <div class="item-rank"><%= i + 1 %></div>
+          <div>
+            <div class="item-name"><%= b.name %></div>
+            <div class="item-meta"><%= b.count %> completed</div>
+          </div>
+        </div>
+        <div class="item-value"><%= formatPrice(b.revenue) %></div>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

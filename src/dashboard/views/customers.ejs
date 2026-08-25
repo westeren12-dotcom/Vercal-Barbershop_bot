@@ -1,0 +1,42 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>👥 Customers</h1>
+  <p>Customer database and history</p>
+</div>
+
+<div class="table-container">
+  <div class="table-header">
+    <h2>All Customers</h2>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Phone</th>
+          <th>Completed</th>
+          <th>Total Spent</th>
+          <th>Last Visit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% customers.forEach(function(c, i) { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><strong><%= c.firstName || 'N/A' %></strong></td>
+          <td><%= c.username ? '@' + c.username : '-' %></td>
+          <td><%= c.phone || '-' %></td>
+          <td><span class="badge badge-completed"><%= c.completedCount %></span></td>
+          <td><strong><%= formatPrice(c.totalSpent) %></strong></td>
+          <td><%= c.lastVisit ? formatDate(c.lastVisit) : 'Never' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

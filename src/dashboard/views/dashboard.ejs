@@ -1,0 +1,63 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>📊 Dashboard</h1>
+  <p>Welcome back to <%= clinicName %> admin panel</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon">💰</div>
+    <div class="stat-label">Today's Revenue</div>
+    <div class="stat-value accent"><%= formatPrice(todayRevenue) %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">👥</div>
+    <div class="stat-label">Today's Customers</div>
+    <div class="stat-value info"><%= todayCustomers %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">✅</div>
+    <div class="stat-label">Completed Today</div>
+    <div class="stat-value success"><%= completedToday %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-label">Pending Confirmations</div>
+    <div class="stat-value warning"><%= pendingConfirmations %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📆</div>
+    <div class="stat-label">Monthly Revenue</div>
+    <div class="stat-value accent"><%= formatPrice(monthRevenue) %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🚫</div>
+    <div class="stat-label">Cancelled (Month)</div>
+    <div class="stat-value danger"><%= cancelledMonth %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">👤</div>
+    <div class="stat-label">Total Customers</div>
+    <div class="stat-value"><%= totalCustomers %></div>
+  </div>
+</div>
+
+<div class="chart-container">
+  <h3>📈 Last 7 Days Revenue</h3>
+  <div class="bar-chart">
+    <% 
+      const maxRevenue = Math.max(...dailyRevenue.map(d => d.amount), 1);
+      dailyRevenue.forEach(function(d) { 
+        const height = Math.max((d.amount / maxRevenue) * 180, 4);
+    %>
+      <div class="bar-item">
+        <div class="bar-value"><%= formatPrice(d.amount) %></div>
+        <div class="bar" style="height: <%= height %>px;"></div>
+        <div class="bar-label"><%= d.date %></div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
