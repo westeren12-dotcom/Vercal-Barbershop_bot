@@ -55,22 +55,35 @@ export async function autoSeed(): Promise<void> {
 
   // ─── Admins ────────────────────────────────────────────
 
-  // Register admins from ADMIN_TELEGRAM_IDS env
+  // Register admins from ADMIN_TELEGRAM_IDS and ADMIN_USERNAMES env
   const adminIds = config.ADMIN_TELEGRAM_IDS;
-  const adminNames = ['Abbosbek', 'Isakov'];
+  const adminUsernames = config.ADMIN_USERNAMES;
+  const adminData = [
+    { username: 'Barber_abbosbek', firstName: 'Abbosbek' },
+    { username: 'isakovvvv12', firstName: 'Isakov' },
+  ];
 
-  for (let i = 0; i < adminIds.length; i++) {
+  // Create admin records for each configured admin
+  for (let i = 0; i < Math.max(adminIds.length, adminUsernames.length, adminData.length); i++) {
+    const admin = adminData[i] || { username: `admin_${i}`, firstName: `Admin ${i + 1}` };
+    const telegramId = adminIds[i] || 0;
+
     await prisma.admin.upsert({
-      where: { telegramId: BigInt(adminIds[i]) },
+      where: { telegramId: BigInt(telegramId) },
       create: {
-        telegramId: BigInt(adminIds[i]),
-        firstName: adminNames[i] || `Admin ${i + 1}`,
+        telegramId: BigInt(telegramId),
+        username: admin.username,
+        firstName: admin.firstName,
         isActive: true,
       },
-      update: { isActive: true },
+      update: {
+        username: admin.username,
+        firstName: admin.firstName,
+        isActive: true,
+      },
     });
   }
-  console.log(`   ✅ ${adminIds.length} adminlar ro'yxatga olindi`);
+  console.log(`   ✅ Adminlar ro'yxatga olindi`);
 
   console.log('🌱 Auto-seed complete!');
 }

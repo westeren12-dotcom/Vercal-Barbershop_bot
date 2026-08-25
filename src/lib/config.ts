@@ -10,6 +10,10 @@ export const config = {
     .map((s) => s.trim())
     .filter(Boolean)
     .map(Number),
+  ADMIN_USERNAMES: (process.env.ADMIN_USERNAMES || '')
+    .split(',')
+    .map((s) => s.trim().replace('@', '').toLowerCase())
+    .filter(Boolean),
   CLINIC_NAME: process.env.CLINIC_NAME || 'Vercal Barbershop',
   CLINIC_PHONE: process.env.CLINIC_PHONE || '',
   CLINIC_ADDRESS: process.env.CLINIC_ADDRESS || '',

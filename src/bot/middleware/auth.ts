@@ -3,24 +3,42 @@ import { Context } from 'telegraf';
 import prisma from '../../lib/prisma/client';
 import { config } from '../../lib/config';
 
-// Cache admin Telegram IDs from DB for fast lookup
-const adminCache = new Set<number>(config.ADMIN_TELEGRAM_IDS);
+// Cache admin Telegram IDs and usernames for fast lookup
+const adminIdCache = new Set<number>(config.ADMIN_TELEGRAM_IDS);
+const adminUsernameCache = new Set<string>(config.ADMIN_USERNAMES);
 
 /**
  * Check if a Telegram user is an admin
+ * Checks: 1) Telegram ID in env/DB, 2) Username in env/DB
  */
 export async function isAdmin(ctx: Context): Promise<boolean> {
   const userId = ctx.from?.id;
-  if (!userId) return false;
+  const username = ctx.from?.username?.toLowerCase();
 
   // Fast path: check env config first
-  if (adminCache.has(userId)) return true;
+  if (userId && adminIdCache.has(userId)) return true;
+  if (username && adminUsernameCache.has(username)) return true;
 
-  // Slow path: check DB
-  const admin = await prisma.admin.findUnique({
-    where: { telegramId: BigInt(userId) },
-  });
-  return admin?.isActive === true;
+  // Slow path: check DB by Telegram ID
+  if (userId) {
+    const admin = await prisma.admin.findUnique({
+      where: { telegramId: BigInt(userId) },
+    });
+    if (admin?.isActive) return true;
+  }
+
+  // Slow path: check DB by username
+  if (username) {
+    const admin = await prisma.admin.findFirst({
+      where: {
+        username: { equals: username, mode: 'insensitive' },
+        isActive: true,
+      },
+    });
+    if (admin) return true;
+  }
+
+  return false;
 }
 
 /**
@@ -29,11 +47,16 @@ export async function isAdmin(ctx: Context): Promise<boolean> {
 export async function refreshAdminCache(): Promise<void> {
   const admins = await prisma.admin.findMany({
     where: { isActive: true },
-    select: { telegramId: true },
+    select: { telegramId: true, username: true },
   });
-  adminCache.clear();
-  config.ADMIN_TELEGRAM_IDS.forEach((id) => adminCache.add(id));
-  admins.forEach((a) => adminCache.add(Number(a.telegramId)));
+  adminIdCache.clear();
+  adminUsernameCache.clear();
+  config.ADMIN_TELEGRAM_IDS.forEach((id) => adminIdCache.add(id));
+  config.ADMIN_USERNAMES.forEach((u) => adminUsernameCache.add(u));
+  admins.forEach((a) => {
+    adminIdCache.add(Number(a.telegramId));
+    if (a.username) adminUsernameCache.add(a.username.toLowerCase());
+  });
 }
 
 /**
@@ -44,7 +67,7 @@ export function requireAdmin() {
   return async (ctx: Context, next: () => Promise<void>) => {
     const admin = await isAdmin(ctx);
     if (!admin) {
-      await ctx.reply('❌ Sizda bu buyruqni ishlatish huquqi yo\'q.\n\nYou don\'t have permission to use this command.');
+      await ctx.reply('❌ Sizda bu buyruqni ishlatish huquqi yo\'q.');
       return;
     }
     await next();
