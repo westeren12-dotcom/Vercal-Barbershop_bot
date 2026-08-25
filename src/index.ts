@@ -2,9 +2,30 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import { execSync } from 'child_process';
 import { createBot } from './bot';
 import { refreshAdminCache } from './bot/middleware/auth';
 import { startDashboard } from './dashboard/server';
+
+/**
+ * Run Prisma migrations before starting the bot.
+ * This ensures the database tables exist in any environment (Docker, production, etc.)
+ */
+function runMigrations(): void {
+  console.log('🔄 Syncing database schema...');
+  try {
+    // Use db push — works without pre-existing migration files
+    // Perfect for containers, Docker, and fresh deployments
+    execSync('npx prisma db push', {
+      stdio: 'inherit',
+      timeout: 60000,
+    });
+    console.log('✅ Database schema synced.');
+  } catch (err) {
+    console.error('❌ Could not sync database schema:', err);
+    console.error('   Make sure DATABASE_URL is correct and PostgreSQL is reachable.');
+  }
+}
 
 async function main() {
   console.log('💈 Vercal Barbershop Bot starting...');
@@ -19,6 +40,9 @@ async function main() {
     console.error('❌ DATABASE_URL is not set. Please configure .env');
     process.exit(1);
   }
+
+  // Run migrations automatically
+  runMigrations();
 
   // Create and start bot
   const bot = await createBot();
