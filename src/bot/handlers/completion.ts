@@ -22,7 +22,21 @@ export async function notifyAdminsOfCompletion(ctx: Context, appointmentId: numb
 
   if (!appointment) return;
 
-  const adminIds = (await import('../../lib/config')).config.ADMIN_TELEGRAM_IDS;
+  // Collect admin IDs from BOTH env config AND database
+  const envAdminIds = (await import('../../lib/config')).config.ADMIN_TELEGRAM_IDS;
+  const dbAdmins = await prisma.admin.findMany({
+    where: { isActive: true },
+    select: { telegramId: true },
+  });
+  const allAdminIds = new Set<number>([
+    ...envAdminIds,
+    ...dbAdmins.map((a) => Number(a.telegramId)),
+  ]);
+
+  if (allAdminIds.size === 0) {
+    console.error('⚠️ No admins found to notify! Set ADMIN_TELEGRAM_IDS or ADMIN_USERNAMES in .env');
+    return;
+  }
 
   const message =
     `🔔 *XIZMAT TUGALLANISH SO'ROVI*\n\n` +
@@ -34,7 +48,7 @@ export async function notifyAdminsOfCompletion(ctx: Context, appointmentId: numb
     `Mijoz xizmat tugallanganini aytdi.\n\n` +
     `Xizmat haqiqatan tugallanganmi?`;
 
-  for (const adminId of adminIds) {
+  for (const adminId of allAdminIds) {
     try {
       await ctx.telegram.sendMessage(adminId, message, {
         parse_mode: 'Markdown',
