@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import { createBot } from './bot';
 import { refreshAdminCache } from './bot/middleware/auth';
 import { startDashboard } from './dashboard/server';
+import { autoSeed } from './lib/seed';
 
 /**
  * Run Prisma migrations before starting the bot.
@@ -43,6 +44,9 @@ async function main() {
 
   // Run migrations automatically
   runMigrations();
+
+  // Auto-seed data if database is empty
+  await autoSeed();
 
   // Create and start bot
   const bot = await createBot();
