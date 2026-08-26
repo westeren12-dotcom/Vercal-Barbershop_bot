@@ -2,13 +2,40 @@
 import { Context, Markup } from 'telegraf';
 import prisma from '../../lib/prisma/client';
 import { formatPrice, formatDate, getToday, getTomorrow, getDateOffset } from '../utils/format';
+import { config } from '../../lib/config';
 
 /**
  * /start — Welcome & customer menu
+ * Also auto-registers admins by username so they receive notifications
  */
 export async function handleStart(ctx: Context) {
   const telegramId = ctx.from?.id;
   if (!telegramId) return;
+
+  const username = ctx.from?.username?.toLowerCase();
+  const adminUsernames = config.ADMIN_USERNAMES;
+  const isUserAdmin = username ? adminUsernames.includes(username) : false;
+
+  // If admin by username, save/update their Telegram ID in Admin table
+  if (isUserAdmin) {
+    await prisma.admin.upsert({
+      where: { telegramId: BigInt(telegramId) },
+      create: {
+        telegramId: BigInt(telegramId),
+        username: ctx.from?.username,
+        firstName: ctx.from?.first_name,
+        lastName: ctx.from?.last_name,
+        isActive: true,
+      },
+      update: {
+        username: ctx.from?.username,
+        firstName: ctx.from?.first_name,
+        lastName: ctx.from?.last_name,
+        isActive: true,
+      },
+    });
+    console.log(`👑 Admin registered: @${ctx.from?.username} (ID: ${telegramId})`);
+  }
 
   // Upsert customer in DB
   await prisma.customer.upsert({
@@ -27,18 +54,48 @@ export async function handleStart(ctx: Context) {
   });
 
   const name = ctx.from?.first_name || 'Do\'st';
-  await ctx.reply(
-    `💈 *Vercal Barbershop* ga xush kelibsiz!\n\nAssalomu alaykum, ${name}! 👋\nBizning xizmatlarimiz bilan tanishing:`,
-    {
-      parse_mode: 'Markdown',
-      ...Markup.keyboard([
-        ['📅 Online Booking', '💈 Xizmatlar'],
-        ['💰 Narxlar', '📋 Mening buyurtmalarim'],
-        ['✅ Xizmatim tugadi', '📍 Manzil'],
-        ['📞 Aloqa'],
-      ]).resize(),
-    }
-  );
+
+  // Admins get admin menu, customers get customer menu
+  if (isUserAdmin) {
+    await ctx.reply(
+      `💈 *Vercal Barbershop* — Admin Panel\n\n` +
+      `Assalomu alaykum, ${name}! 👋\n` +
+      `Siz admin sifatida kiradingiz.\n\n` +
+      `Buyruqlar:\n` +
+      `/BugungiFoyda — Bugungi daromad\n` +
+      `/BugungiMijozlar — Bugungi mijozlar\n` +
+      `/Statistika — Umumiy statistika\n` +
+      `/Hisobot — Oylik hisobot\n` +
+      `/Xizmatlar — Xizmatlar boshqaruvi\n` +
+      `/Narxlar — Narxlar\n` +
+      `/Barberlar — Berberlar\n` +
+      `/Bookinglar — Buyurtmalar\n` +
+      `/Mijozlar — Mijozlar bazasi\n` +
+      `/Broadcast — Xabar yuborish`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.keyboard([
+          ['📅 Online Booking', '💈 Xizmatlar'],
+          ['💰 Narxlar', '📋 Mening buyurtmalarim'],
+          ['✅ Xizmatim tugadi', '📍 Manzil'],
+          ['📞 Aloqa'],
+        ]).resize(),
+      }
+    );
+  } else {
+    await ctx.reply(
+      `💈 *Vercal Barbershop* ga xush kelibsiz!\n\nAssalomu alaykum, ${name}! 👋\nBizning xizmatlarimiz bilan tanishing:`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.keyboard([
+          ['📅 Online Booking', '💈 Xizmatlar'],
+          ['💰 Narxlar', '📋 Mening buyurtmalarim'],
+          ['✅ Xizmatim tugadi', '📍 Manzil'],
+          ['📞 Aloqa'],
+        ]).resize(),
+      }
+    );
+  }
 }
 
 /**
@@ -100,7 +157,7 @@ export async function handlePrices(ctx: Context) {
  * /location — Show location
  */
 export async function handleLocation(ctx: Context) {
-  const { CLINIC_NAME, CLINIC_ADDRESS, GOOGLE_MAPS_URL } = (await import('../../lib/config')).config;
+  const { CLINIC_NAME, CLINIC_ADDRESS, GOOGLE_MAPS_URL } = config;
 
   let msg = `📍 *${CLINIC_NAME}*\n\n`;
   if (CLINIC_ADDRESS) {
@@ -119,7 +176,7 @@ export async function handleLocation(ctx: Context) {
  * /contact — Show contact info
  */
 export async function handleContact(ctx: Context) {
-  const { CLINIC_NAME, CLINIC_PHONE, CLINIC_ADDRESS } = (await import('../../lib/config')).config;
+  const { CLINIC_NAME, CLINIC_PHONE, CLINIC_ADDRESS } = config;
 
   let msg = `📞 *${CLINIC_NAME} — Aloqa*\n\n`;
   if (CLINIC_PHONE) {

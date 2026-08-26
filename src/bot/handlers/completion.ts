@@ -29,8 +29,8 @@ export async function notifyAdminsOfCompletion(ctx: Context, appointmentId: numb
     select: { telegramId: true },
   });
   const allAdminIds = new Set<number>([
-    ...envAdminIds,
-    ...dbAdmins.map((a) => Number(a.telegramId)),
+    ...envAdminIds.filter((id) => id > 0),
+    ...dbAdmins.map((a) => Number(a.telegramId)).filter((id) => id > 0),
   ]);
 
   if (allAdminIds.size === 0) {
